@@ -14,6 +14,7 @@ parameters = {
 # test = LIF(**parameters)
 if __name__ == '__main__':
     model = LIF(parameters)
-    V = model.simulate()
+    func = lambda u, u_rest: -(u - u_rest)** 2
+    V = model.simulate(func)
 
 

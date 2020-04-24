@@ -25,7 +25,7 @@ class LIF:
     def __make_time_array_steps(self):
         return np.arange(0, self.end_time + self.dt, self.dt)
 
-    def simulate(self):
+    def simulate(self, func=None):
         time = self.__make_time_array_steps()
         u_history = np.empty(len(time))
         self.I_history = np.empty(len(time))
@@ -37,11 +37,16 @@ class LIF:
                 u_history[i] = self.u_rest
                 self.I_history[i] = 0
             else:
-                # tau_m * (du/dt) = -(u - u_rest) + (R * I)
-                du = self.__tau_m() * ((-u_history[i-1] + self.u_rest) + (self.R * self.I))
-                u_history[i] = u_history[i-1] + du * self.dt
+                if func is None:
+                    # tau_m * (du/dt) = -(u - u_rest) + (R * I)
+                    du = (1/self.__tau_m()) * (-(u_history[i-1] - self.u_rest) + (self.R * self.I))
+                else:
+                    # tau_m * (du/dt) = F(u) + (R * I)
+                    du = (1/self.__tau_m()) * ((func(u_history[i-1], self.u_rest)) + (self.R * self.I))
+                    print('here')
+
+                u_history[i] = u_history[i - 1] + du * self.dt
                 self.I_history[i] = self.I
-                # print(u_history[i])
 
             if u_history[i] > self.threshold:
                 self.__reset_model(u_history, i)
@@ -56,7 +61,3 @@ class LIF:
 
     def get_I_history(self):
         return self.I_history
-
-
-
-
